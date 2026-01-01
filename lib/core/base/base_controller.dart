@@ -3,7 +3,7 @@ import '../utils/logger.dart';
 
 abstract class BaseController extends GetxController {
   final _isLoading = false.obs;
-  final _error = Rx("null");
+  final _error = Rx(null);
   final _isInitialized = false.obs;
 
   bool get isLoading => _isLoading.value;

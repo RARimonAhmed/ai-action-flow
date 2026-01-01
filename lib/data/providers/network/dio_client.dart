@@ -1,6 +1,7 @@
+import 'package:ai_action_flow/app/config/constants/api_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import '../../../config/constants/api_constants.dart';
+import '../../../core/utils/logger.dart';
 
 class DioClient {
   late final Dio _dio;
@@ -9,8 +10,8 @@ class DioClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: ApiConstants.connectTimeout,
+        receiveTimeout: ApiConstants.receiveTimeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -32,24 +33,31 @@ class DioClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // Add auth token
-          final token = await _getToken();
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
+          // Add API key from environment
+          final apiKey = const String.fromEnvironment('OPENAI_API_KEY');
+          if (apiKey.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $apiKey';
           }
+
+          AppLogger.i('API Request: ${options.method} ${options.path}');
           return handler.next(options);
         },
+        onResponse: (response, handler) {
+          AppLogger.i('API Response: ${response.statusCode}');
+          return handler.next(response);
+        },
         onError: (error, handler) {
+          AppLogger.e('API Error: ${error.message}', error);
           return handler.next(error);
         },
       ),
     );
   }
 
-  Future _getToken() async {
-    // Get token from storage
-    return null;
-  }
-
   Dio get dio => _dio;
+
+  void dispose() {
+    _dio.close(force: true);
+    AppLogger.i('DioClient disposed');
+  }
 }
