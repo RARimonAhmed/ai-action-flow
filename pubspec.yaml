@@ -20,6 +20,9 @@ dependencies:
   intl: ^0.20.2
   logger: ^2.6.2
   equatable: ^2.0.7
+  flutter_inappwebview: ^6.1.5
+  flutter_animate: ^4.5.2
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
