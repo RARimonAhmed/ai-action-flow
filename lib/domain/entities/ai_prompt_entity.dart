@@ -26,5 +26,5 @@ class AIPromptEntity extends Equatable {
   });
 
   @override
-  List get props => [id, title, instruction, type, icon];
+  List<Object?> get props => [id, title, instruction, type, icon];
 }

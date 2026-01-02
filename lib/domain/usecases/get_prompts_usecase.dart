@@ -8,7 +8,7 @@ class GetPromptsUseCase {
 
   GetPromptsUseCase(this.repository);
 
-  Future<Either>> call() async {
+  Future<Either<Failure, List<AIPromptEntity>>> call() async {
     return await repository.getAvailablePrompts();
   }
 }

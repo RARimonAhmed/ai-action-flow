@@ -18,9 +18,9 @@ class AIActionController extends BaseController {
   });
 
   // State
-  final availablePrompts = [].obs;
-  final selectedPrompt = Rx(null);
-  final currentResponse = Rx(null);
+  final availablePrompts = <AIPromptEntity>[].obs;
+  final selectedPrompt = Rx<AIPromptEntity?>(null);
+  final currentResponse = Rx<AIResponseEntity?>(null);
   final isGenerating = false.obs;
   final customPromptController = TextEditingController();
 
@@ -40,7 +40,7 @@ class AIActionController extends BaseController {
     AppLogger.i('AIActionController disposed - resources cleaned');
   }
 
-  Future _loadPrompts() async {
+  Future<void> _loadPrompts() async {
     setLoading(true);
 
     final result = await getPromptsUseCase();
@@ -105,7 +105,7 @@ class AIActionController extends BaseController {
   }
 
   // Generate AI response
-  Future generateResponse({String? customInstruction}) async {
+  Future<void> generateResponse({String? customInstruction}) async {
     if (_currentSelectedText == null || selectedPrompt.value == null) {
       AppLogger.w('Cannot generate: missing text or prompt');
       return;
@@ -123,7 +123,7 @@ class AIActionController extends BaseController {
 
     // Create loading response
     currentResponse.value = AIResponseEntity(
-      id: 'temp',
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       originalText: _currentSelectedText!.text,
       generatedText: '',
       appliedPrompt: selectedPrompt.value!,
@@ -209,7 +209,7 @@ class AIActionController extends BaseController {
   }
 
   // Regenerate response
-  Future regenerate() async {
+  Future<void> regenerate() async {
     if (selectedPrompt.value == null) {
       AppLogger.w('Cannot regenerate: no prompt selected');
       return;

@@ -11,7 +11,7 @@ class StorageProvider {
   static const String keySettings = 'app_settings';
   static const String keyLastSession = 'last_session';
 
-  Future write(String key, dynamic value) async {
+  Future<void> write(String key, dynamic value) async {
     try {
       await _storage.write(key, value);
       AppLogger.d('Storage write: $key');
@@ -21,7 +21,7 @@ class StorageProvider {
     }
   }
 
-  T? read(String key) {
+  dynamic read(String key) {
     try {
       final value = _storage.read(key);
       AppLogger.d('Storage read: $key');
@@ -32,7 +32,18 @@ class StorageProvider {
     }
   }
 
-  Future remove(String key) async {
+  T? readTyped<T>(String key) {
+    try {
+      final value = _storage.read(key);
+      AppLogger.d('Storage read typed: $key');
+      return value as T?;
+    } catch (e) {
+      AppLogger.e('Storage read error', e);
+      return null;
+    }
+  }
+
+  Future<void> remove(String key) async {
     try {
       await _storage.remove(key);
       AppLogger.d('Storage remove: $key');
@@ -42,7 +53,7 @@ class StorageProvider {
     }
   }
 
-  Future clear() async {
+  Future<void> clear() async {
     try {
       await _storage.erase();
       AppLogger.i('Storage cleared');
@@ -56,7 +67,7 @@ class StorageProvider {
     return _storage.hasData(key);
   }
 
-  List getKeys() {
+  List<String> getKeys() {
     return _storage.getKeys();
   }
 

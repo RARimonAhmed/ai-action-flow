@@ -1,12 +1,11 @@
 class ApiConstants {
-  // Base URL - Replace with your actual API
   static const String baseUrl = 'https://api.openai.com/v1';
 
   // Endpoints
   static const String chatCompletions = '/chat/completions';
 
-  // API Keys (should be moved to environment variables in production)
-  static const String apiKeyHeader = 'Authorization';
+  // Headers
+  static const String authHeader = 'Authorization';
 
   // Timeouts
   static const Duration connectTimeout = Duration(seconds: 30);

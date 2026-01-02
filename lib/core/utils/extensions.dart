@@ -17,7 +17,7 @@ extension StringExtensions on String {
   }
 }
 
-extension ListExtensions on List {
+extension ListExtensions<T> on List<T> {
   T? get firstOrNull => isEmpty ? null : first;
   T? get lastOrNull => isEmpty ? null : last;
 }

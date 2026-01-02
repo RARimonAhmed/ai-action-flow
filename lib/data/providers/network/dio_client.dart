@@ -1,7 +1,8 @@
 import 'package:ai_action_flow/app/config/constants/api_constants.dart';
+import 'package:ai_action_flow/core/utils/logger.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import '../../../core/utils/logger.dart';
 
 class DioClient {
   late final Dio _dio;
@@ -12,7 +13,7 @@ class DioClient {
         baseUrl: ApiConstants.baseUrl,
         connectTimeout: ApiConstants.connectTimeout,
         receiveTimeout: ApiConstants.receiveTimeout,
-        headers: {
+        headers: const {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
@@ -32,22 +33,22 @@ class DioClient {
 
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // Add API key from environment
-          final apiKey = const String.fromEnvironment('OPENAI_API_KEY');
-          if (apiKey.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $apiKey';
+        onRequest: (options, handler) {
+          final apiKey = dotenv.env['OPENAI_API_KEY'];
+
+          if (apiKey != null && apiKey.isNotEmpty) {
+            options.headers[ApiConstants.authHeader] = 'Bearer $apiKey';
           }
 
-          AppLogger.i('API Request: ${options.method} ${options.path}');
+          AppLogger.i('API → ${options.method} ${options.path}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          AppLogger.i('API Response: ${response.statusCode}');
+          AppLogger.i('RESPONSE ← ${response.statusCode}');
           return handler.next(response);
         },
         onError: (error, handler) {
-          AppLogger.e('API Error: ${error.message}', error);
+          AppLogger.e('ERROR ✖ ${error.message}', error);
           return handler.next(error);
         },
       ),

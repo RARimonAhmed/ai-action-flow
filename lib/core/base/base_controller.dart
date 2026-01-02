@@ -3,7 +3,7 @@ import '../utils/logger.dart';
 
 abstract class BaseController extends GetxController {
   final _isLoading = false.obs;
-  final _error = Rx(null);
+  final _error = RxString("");
   final _isInitialized = false.obs;
 
   bool get isLoading => _isLoading.value;
@@ -16,13 +16,13 @@ abstract class BaseController extends GetxController {
   }
 
   void setError(String? value) {
-    _error.value = value;
+    _error.value = value.toString();
     if (value != null) {
       AppLogger.e('${runtimeType}: Error occurred: $value');
     }
   }
 
-  void clearError() => _error.value = null;
+  void clearError() => _error.value = "";
 
   void setInitialized(bool value) {
     _isInitialized.value = value;

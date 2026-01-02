@@ -1,7 +1,7 @@
 import 'package:ai_action_flow/domain/entities/ai_prompt_entity.dart';
 
 class PromptConstants {
-  static const List defaultPrompts = [
+  static const List<AIPromptEntity> defaultPrompts = [
     AIPromptEntity(
       id: 'improve_writing',
       title: 'Improve Writing',

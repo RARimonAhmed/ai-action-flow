@@ -17,9 +17,9 @@ class WebViewController extends BaseController {
   final progress = 0.0.obs;
 
   // Text Selection
-  final selectedText = Rx(null);
+  final selectedText = Rx<SelectedTextEntity?>(null);
   final showActionBubble = false.obs;
-  final bubblePosition = Rx(null);
+  final bubblePosition = Rx<Offset?>(null);
 
   // Controllers
   late AIActionController aiActionController;
@@ -50,14 +50,23 @@ class WebViewController extends BaseController {
     webViewController = controller;
     AppLogger.i('WebView created');
     _injectTextSelectionScript();
-  }
 
-  void onLoadStart(InAppWebViewController controller, Uri? url) {
-    if (url != null) {
-      currentUrl.value = url.toString();
-      AppLogger.d('Loading started: $url');
-    }
-    setLoading(true);
+    // Setup JavaScript handler
+    controller.addJavaScriptHandler(
+      handlerName: 'onTextSelected',
+      callback: (args) {
+        if (args.isNotEmpty && args[0] is Map) {
+          handleTextSelected(args[0] as Map<String, dynamic>);
+        }
+      },
+    );
+
+    controller.addJavaScriptHandler(
+      handlerName: 'onTextDeselected',
+      callback: (args) {
+        handleTextDeselected();
+      },
+    );
   }
 
   void onLoadStop(InAppWebViewController controller, Uri? url) async {
@@ -78,17 +87,6 @@ class WebViewController extends BaseController {
 
   void onProgressChanged(InAppWebViewController controller, int progress) {
     this.progress.value = progress / 100;
-  }
-
-  void onLoadError(
-      InAppWebViewController controller,
-      Uri? url,
-      int code,
-      String message,
-      ) {
-    AppLogger.e('WebView load error: $message (Code: $code)');
-    setError('Failed to load page: $message');
-    setLoading(false);
   }
 
   // Inject JavaScript for text selection handling
@@ -136,7 +134,7 @@ class WebViewController extends BaseController {
   }
 
   // Handle text selection from JavaScript
-  void handleTextSelected(Map data) {
+  void handleTextSelected(Map<String, dynamic> data) {
     _selectionDebouncer?.cancel();
 
     _selectionDebouncer = Timer(const Duration(milliseconds: 500), () {
@@ -199,19 +197,19 @@ class WebViewController extends BaseController {
   }
 
   // Navigation methods
-  Future goBack() async {
+  Future<void> goBack() async {
     if (await webViewController?.canGoBack() ?? false) {
       await webViewController?.goBack();
     }
   }
 
-  Future goForward() async {
+  Future<void> goForward() async {
     if (await webViewController?.canGoForward() ?? false) {
       await webViewController?.goForward();
     }
   }
 
-  Future reload() async {
+  Future<void> reload() async {
     await webViewController?.reload();
   }
 
@@ -225,7 +223,7 @@ class WebViewController extends BaseController {
   }
 
   // Clear selection
-  void clearSelection() async {
+  Future<void> clearSelection() async {
     await webViewController?.evaluateJavascript(
       source: 'window.getSelection().removeAllRanges();',
     );

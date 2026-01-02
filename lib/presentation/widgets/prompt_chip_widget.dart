@@ -25,12 +25,12 @@ class PromptChipWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor
+              ? Colors.blueAccent
               : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? Theme.of(context).primaryColor
+                ? Colors.blueAccent
                 : Colors.grey.shade300,
             width: 1.5,
           ),
@@ -38,39 +38,24 @@ class PromptChipWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[
-              Text(
-                icon!,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(width: 8),
-            ],
+            Icon(
+              Icons.auto_awesome,
+              size: 18,
+              color: isSelected
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+            const SizedBox(width: 8),
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 14,
+                color: isSelected
+                    ? Colors.white
+                    : Colors.black87,
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
               ),
             ),
-            if (isSelected && onRemove != null) ...[
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: onRemove,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.white24,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    size: 14,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

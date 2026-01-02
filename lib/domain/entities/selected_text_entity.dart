@@ -14,7 +14,7 @@ class SelectedTextEntity extends Equatable {
   });
 
   @override
-  List get props => [text, positionX, positionY, selectedAt];
+  List<Object?> get props => [text, positionX, positionY, selectedAt];
 
   bool get isEmpty => text.trim().isEmpty;
 

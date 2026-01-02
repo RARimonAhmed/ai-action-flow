@@ -9,7 +9,7 @@ class GenerateAIResponseUseCase {
 
   GenerateAIResponseUseCase(this.repository);
 
-  Future<Either> call({
+  Future<Either<Failure, AIResponseEntity>> call({
     required String selectedText,
     required AIPromptEntity prompt,
     String? customInstruction,

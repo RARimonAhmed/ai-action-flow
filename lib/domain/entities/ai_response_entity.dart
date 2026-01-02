@@ -23,7 +23,7 @@ class AIResponseEntity extends Equatable {
   });
 
   @override
-  List get props => [
+  List<Object?> get props => [
     id,
     originalText,
     generatedText,
