@@ -55,9 +55,79 @@ class WebViewPage extends StatelessWidget {
         javaScriptCanOpenWindowsAutomatically: true,
         useOnLoadResource: true,
         useShouldOverrideUrlLoading: true,
+        // Disable text selection context menu
+        disableContextMenu: true,
       ),
-      onWebViewCreated: controller.onWebViewCreated,
-      onLoadStop: controller.onLoadStop,
+      onWebViewCreated: (webViewController) {
+        controller.onWebViewCreated(webViewController);
+
+        // Inject CSS to customize text selection colors and hide selection handles
+        webViewController.evaluateJavascript(source: """
+          (function() {
+            var style = document.createElement('style');
+            style.innerHTML = `
+              ::selection {
+                background-color: rgba(52, 133, 255, 0.1) !important;
+                color: #3485FF !important;
+              }
+              ::-moz-selection {
+                background-color: rgba(52, 133, 255, 0.1) !important;
+                color: #3485FF !important;
+              }
+              
+              /* Hide selection handles and tooltips */
+              ::-webkit-selection-handle,
+              ::-webkit-selection-handle-left,
+              ::-webkit-selection-handle-right {
+                display: none !important;
+                visibility: hidden !important;
+                background-color: #3485FF !important;
+              }
+              
+              /* Hide Android selection action mode */
+              .android-action-mode {
+                display: none !important;
+              }
+            `;
+            document.head.appendChild(style);
+          })();
+        """);
+      },
+      onLoadStop: (webViewController, url) {
+        controller.onLoadStop(webViewController, url);
+
+        // Re-inject CSS after page load to ensure it applies
+        webViewController.evaluateJavascript(source: """
+          (function() {
+            var style = document.createElement('style');
+            style.innerHTML = `
+              ::selection {
+                background-color: rgba(52, 133, 255, 0.1) !important;
+                color: #3485FF !important;
+              }
+              ::-moz-selection {
+                background-color: rgba(52, 133, 255, 0.1) !important;
+                color: #3485FF !important;
+              }
+              
+              /* Hide selection handles and tooltips */
+              ::-webkit-selection-handle,
+              ::-webkit-selection-handle-left,
+              ::-webkit-selection-handle-right {
+                display: none !important;
+                visibility: hidden !important;
+                background-color: #3485FF !important;
+              }
+              
+              /* Hide Android selection action mode */
+              .android-action-mode {
+                display: none !important;
+              }
+            `;
+            document.head.appendChild(style);
+          })();
+        """);
+      },
       onProgressChanged: controller.onProgressChanged,
       onLoadError: (controller, url, code, message) {
         Get.snackbar(
