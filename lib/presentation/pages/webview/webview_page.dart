@@ -12,35 +12,29 @@ class WebViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Text Assistant'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => controller.webViewController?.reload(),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Obx(() => controller.progress.value < 1.0
-                  ? LinearProgressIndicator(value: controller.progress.value)
-                  : const SizedBox.shrink()),
-              Expanded(child: _buildWebView()),
-            ],
-          ),
-          Obx(() => controller.showActionBubble.value &&
-              controller.bubblePosition.value != null
-              ? ActionBubbleWidget(
-            position: controller.bubblePosition.value!,
-            onTap: controller.onActionBubbleTapped,
-          )
-              : const SizedBox.shrink()),
-          const PromptBottomSheet(),
-        ],
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                Obx(() => controller.progress.value < 1.0
+                    ? LinearProgressIndicator(value: controller.progress.value)
+                    : const SizedBox.shrink()),
+                Expanded(child: _buildWebView()),
+              ],
+            ),
+            Obx(() => controller.showActionBubble.value &&
+                controller.bubblePosition.value != null
+                ? ActionBubbleWidget(
+              position: controller.bubblePosition.value!,
+              onTap: controller.onActionBubbleTapped,
+            )
+                : const SizedBox.shrink()),
+            const PromptBottomSheet(),
+          ],
+        ),
       ),
     );
   }

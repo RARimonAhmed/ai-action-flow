@@ -5,5 +5,6 @@ class Assets {
   static const String aiActionFlow = '.env';
   static const String imagesFloatingIcon = 'assets/images/floating_icon.png';
   static const String imagesFloatingIconImage = 'assets/images/floating_icon_image.png';
+  static const String imagesSendIcon = 'assets/images/send_icon.png';
 
 }

@@ -1,6 +1,8 @@
+import 'package:ai_action_flow/app/config/constants/app_images.dart';
+import 'package:ai_action_flow/presentation/controllers/ai_action/ai_action_controller.dart';
+import 'package:ai_action_flow/presentation/controllers/webview/webview_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/ai_action/ai_action_controller.dart';
 import 'prompt_chip_widget.dart';
 import 'result_view_widget.dart';
 
@@ -14,66 +16,107 @@ class PromptBottomSheet extends StatelessWidget {
     return Obx(() {
       if (!controller.showBottomSheet.value) return const SizedBox.shrink();
 
-      return DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _buildHeader(context),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildPromptSelector(),
-                        const SizedBox(height: 16),
-                        _buildCustomPromptInput(),
-                        const SizedBox(height: 16),
-                        _buildResultView(),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
+      return GestureDetector(
+        onTap: () {
+          controller.closePromptSheet();
+          _clearTextSelection();
         },
+        behavior: HitTestBehavior.opaque,
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          builder: (context, scrollController) {
+            return GestureDetector(
+                onTap: () {},
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDragHandle(),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildCustomPromptInput(),
+                              const SizedBox(height: 20),
+                              _buildPromptSelector(),
+                              const SizedBox(height: 20),
+                              _buildActionButtons(),
+                              const SizedBox(height: 16),
+                              _buildResultView(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ));
+            },
+        ),
       );
     });
   }
 
-  Widget _buildHeader(BuildContext context) {
+  void _clearTextSelection() {
+    final webViewController = Get.find<WebViewController>().webViewController;
+    webViewController?.evaluateJavascript(source: """
+      window.getSelection().removeAllRanges();
+    """);
+  }
+
+  Widget _buildDragHandle() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(top: 12, bottom: 8),
+      width: 40,
+      height: 4,
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(2),
       ),
+    );
+  }
+
+  Widget _buildCustomPromptInput() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      padding: const EdgeInsets.only(left: 20, top: 4, bottom: 4, right: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'AI Actions',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Expanded(
+            child: TextField(
+              controller: controller.customPromptController,
+              decoration: const InputDecoration(
+                hintText: 'Write a promt here...',
+                hintStyle: TextStyle(
+                  color: Color(0xFFAAAAAA),
+                  fontSize: 16,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 14),
+              ),
+              style: const TextStyle(fontSize: 16),
+            ),
           ),
           IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: controller.closePromptSheet,
+            onPressed: controller.submitCustomPrompt,
+            icon: Image.asset(AppImages.sendIcon, height: 25,)
           ),
         ],
       ),
@@ -81,62 +124,70 @@ class PromptBottomSheet extends StatelessWidget {
   }
 
   Widget _buildPromptSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Select Action',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        Obx(() => Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: controller.availablePrompts.map((prompt) {
-            final isSelected = controller.selectedPrompt.value?.id == prompt.id;
-            return PromptChipWidget(
-              title: prompt.title,
-              icon: prompt.icon,
-              isSelected: isSelected,
-              onTap: () => controller.selectPrompt(prompt),
-              onRemove: isSelected ? controller.removePrompt : null,
-            );
-          }).toList(),
-        )),
-      ],
-    );
+    return Obx(() => Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: controller.availablePrompts.map((prompt) {
+        final isSelected = controller.selectedPrompt.value?.id == prompt.id;
+        return PromptChipWidget(
+          title: prompt.title,
+          icon: prompt.icon,
+          isSelected: isSelected,
+          onTap: () => controller.selectPrompt(prompt),
+          onRemove: isSelected ? controller.removePrompt : null,
+        );
+      }).toList(),
+    ));
   }
 
-  Widget _buildCustomPromptInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildActionButtons() {
+    return Row(
       children: [
-        const Text(
-          'Or Write Custom Instruction',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: controller.customPromptController,
-          maxLines: 3,
-          decoration: InputDecoration(
-            hintText: 'e.g., "Summarize this for a presentation"',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            filled: true,
-            fillColor: Colors.grey.shade50,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: controller.submitCustomPrompt,
-            icon: const Icon(Icons.send),
-            label: const Text('Submit'),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () {
+              // Insert action
+            },
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(16),
+              backgroundColor: const Color(0xFF3485FF),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Insert',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () {
+              // Replace action
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF3485FF),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: const BorderSide(
+                color: Color(0xFF3485FF),
+                width: 1.5,
+              ),
+            ),
+            child: const Text(
+              'Replace',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
